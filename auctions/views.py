@@ -6,12 +6,20 @@ from django.shortcuts import render
 from django.urls import reverse
 from django.core.exceptions import ObjectDoesNotExist
 
-from .models import User, Listing
+from .models import *
 from .forms import *
 
 def index(request):
-    listings = Listing.objects.all()
+    category_id = request.GET.get('category', default = None)
+    if category_id:
+        listings = Listing.objects.filter(category=category_id)
+        message = Category.objects.get(id=category_id)
+    else:
+        listings = Listing.objects.all()
+        message = None
+
     return render(request, "auctions/index.html", context= {
+        'message': message,
         'listings': listings
     })
 
@@ -20,16 +28,42 @@ def listing(request, pk):
         listing = Listing.objects.get(id=pk)
     except ObjectDoesNotExist:
         listing = None
+
+    if listing:
+        try:
+            watchlist_obj = Watchlist.objects.get(user=request.user, listing=listing)
+        except ObjectDoesNotExist:
+            watchlist_obj = None
+    else:
+        watchlist_obj = None
+
     return render(request, "auctions/listing.html", context= {
-        'listing': listing
+        'listing': listing,
+        "watchlist_obj": watchlist_obj
     })
 
 def categories(request):
-    return render(request, "auctions/index.html")
+    try:
+        categories = Category.objects.all()
+    except ObjectDoesNotExist:
+        categories = None
+    return render(request, "auctions/categories.html", {
+        "categories": categories
+    })
 
 @login_required
 def watchlist(request):
-    return render(request, "auctions/index.html")
+    try:
+        watchlists = Watchlist.objects.filter(user=request.user)
+        listings = []
+        for watchlist in watchlists:
+            listings.append(watchlist.listing)
+    except ObjectDoesNotExist:
+        listings = None
+    return render(request, "auctions/index.html", context= {
+        'message': "Watchlist",
+        'listings': listings
+    })
 
 @login_required
 def create_listing(request):

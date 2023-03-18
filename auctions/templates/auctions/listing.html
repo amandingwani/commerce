@@ -3,8 +3,22 @@
 {% block body %}
 
     {% if listing %}
-    <h2>Listing: {{listing.name}}</h2>
         <div class="container">
+            <h2>Listing: {{listing.name}}</h2>
+
+            {% if user.is_authenticated %}
+                {% if watchlist_obj %}
+                    <h5>Watchlist</h5>
+                    
+                {% else %}
+                    <form action="">
+                        <input type="button" value="Add to Watchlist">
+                    </form>
+                {% endif %}
+            {% endif %}
+
+
+
             <div style="width: 200px">
                 <img src="{{listing.image.url}}" alt="{{listing.name}}" height="200">
             </div>
