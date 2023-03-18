@@ -1,0 +1,28 @@
+{% extends "auctions/layout.html" %}
+
+{% block body %}
+    <h2>Active Listings</h2>
+
+    {% for listing in listings %}
+        <div class="container">
+            <div style="width: 200px">
+                <img src="{{listing.image.url}}" alt="{{listing.name}}" height="200">
+            </div>
+            <h3>{{listing.name}}</h3>
+            
+            <strong>Price: </strong>$
+            {% if listing.bids.first %}
+                {{listing.bids.first.bid_price}}
+            {% else %}
+                {{listing.original_price}}
+            {% endif %}
+
+
+
+            <p>{{listing.description}}</p>
+            <p>Created {{listing.created}}</p>
+        </div>
+    {% empty %}
+        <h3>No active listings found.</h3>
+    {% endfor %}
+{% endblock %}
