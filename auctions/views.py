@@ -6,12 +6,19 @@ from django.shortcuts import render
 from django.urls import reverse
 
 from .models import User, Listing
+from .forms import *
 
 def index(request):
     listings = Listing.objects.all()
     return render(request, "auctions/index.html", context= {
         'listings': listings
     })
+
+# def listing(request, pk):
+#     listing = Listing.objects.get(id=pk)
+#     return render(request, "auctions/index.html", context= {
+#         'listings': listings
+#     })
 
 def categories(request):
     return render(request, "auctions/index.html")
@@ -22,7 +29,36 @@ def watchlist(request):
 
 @login_required
 def create_listing(request):
-    return render(request, "auctions/index.html")
+    if request.method == 'POST':
+        # create a form instance and populate it with data from the request:
+        form = ListingForm(request.POST, request.FILES)
+        # check whether it's valid:
+        if form.is_valid():
+            # process the data in form.cleaned_data as required
+            # Save the form data into the database
+            listing = Listing(
+                user = User.objects.get(pk=request.user.id),
+                name = form.cleaned_data['name'],
+                original_price = form.cleaned_data['original_price'],
+                description = form.cleaned_data['description'],
+                image = form.cleaned_data['image'],
+                category = form.cleaned_data['category']
+            )
+            listing.save()
+
+            # redirect to the new listing:
+            return HttpResponse('TODO')
+        else:
+            return render(request, "auctions/create_listing.html", context= {
+                "form": form,
+                "errors": form.errors.as_json()
+            })
+
+    else:
+        form = ListingForm()
+        return render(request, "auctions/create_listing.html", context= {
+            "form": form
+        })
 
 
 def login_view(request):
