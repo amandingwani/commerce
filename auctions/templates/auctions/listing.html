@@ -8,11 +8,19 @@
 
             {% if user.is_authenticated %}
                 {% if watchlist_obj %}
-                    <h5>Watchlist</h5>
+                    
+                        <span style="background-color: grey; color: white;">Watchlist</span>              
+                        <form style="display: inline-block" action="{% url 'watchlist_delete' %}" method="post">
+                            {% csrf_token %}
+                            <input type="hidden" name="listing_id" value="{{listing.id}}">
+                            <input type="submit" value="X">
+                        </form>
                     
                 {% else %}
-                    <form action="">
-                        <input type="button" value="Add to Watchlist">
+                    <form action="{% url 'watchlist' %}" method="post">
+                        {% csrf_token %}
+                        <input type="hidden" name="listing_id" value="{{listing.id}}">
+                        <input type="submit" value="Add to Watchlist">
                     </form>
                 {% endif %}
             {% endif %}

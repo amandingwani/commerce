@@ -13,7 +13,10 @@ def index(request):
     category_id = request.GET.get('category', default = None)
     if category_id:
         listings = Listing.objects.filter(category=category_id)
-        message = Category.objects.get(id=category_id)
+        try:
+            message = Category.objects.get(id=category_id)
+        except ObjectDoesNotExist:
+            message = "Invalid category"
     else:
         listings = Listing.objects.all()
         message = None
@@ -31,7 +34,7 @@ def listing(request, pk):
 
     if listing:
         try:
-            watchlist_obj = Watchlist.objects.get(user=request.user, listing=listing)
+            watchlist_obj = Watchlist.objects.get(user=request.user.id, listing=listing)
         except ObjectDoesNotExist:
             watchlist_obj = None
     else:
@@ -53,17 +56,61 @@ def categories(request):
 
 @login_required
 def watchlist(request):
-    try:
-        watchlists = Watchlist.objects.filter(user=request.user)
-        listings = []
-        for watchlist in watchlists:
-            listings.append(watchlist.listing)
-    except ObjectDoesNotExist:
-        listings = None
-    return render(request, "auctions/index.html", context= {
-        'message': "Watchlist",
-        'listings': listings
-    })
+    if request.method == "POST":
+        listing_id = request.POST.get('listing_id', default = None)
+        if listing_id:
+            try:
+                listing_obj = Listing.objects.get(id=listing_id)
+                user_obj = request.user
+                try:
+                    w = Watchlist.objects.get(user=user_obj, listing=listing_obj)
+                    return HttpResponseRedirect(reverse('listing', args=[listing_id]))
+                except ObjectDoesNotExist:
+                    pass
+                w = Watchlist(user=user_obj, listing=listing_obj)
+                w.save()
+                return HttpResponseRedirect(reverse('listing', args=[listing_id]))
+            except ObjectDoesNotExist:
+                pass
+
+        return render(request, "auctions/index.html", context= {
+        'message': "Adding to watchlist failed",
+        })
+    else:
+        try:
+            watchlists = Watchlist.objects.filter(user=request.user)
+            listings = []
+            for watchlist in watchlists:
+                listings.append(watchlist.listing)
+        except ObjectDoesNotExist:
+            listings = None
+        return render(request, "auctions/index.html", context= {
+            'message': "Watchlist",
+            'listings': listings
+        })
+    
+@login_required
+def watchlist_delete(request):
+    if request.method == "POST":
+        listing_id = request.POST.get('listing_id', default = None)
+        if listing_id:
+            try:
+                listing_obj = Listing.objects.get(id=listing_id)
+                user_obj = request.user
+                try:
+                    w = Watchlist.objects.get(user=user_obj, listing=listing_obj)
+                    w.delete()
+                except ObjectDoesNotExist:
+                    pass
+            except ObjectDoesNotExist:
+                pass
+            return HttpResponseRedirect(reverse('listing', args=[listing_id]))
+
+        return render(request, "auctions/index.html", context= {
+        'message': "Deleting from watchlist failed",
+        })
+    else:
+        return HttpResponseRedirect(reverse('index'))
 
 @login_required
 def create_listing(request):
