@@ -1,0 +1,32 @@
+{% extends "auctions/layout.html" %}
+
+{% block body %}
+
+    {% if listing %}
+    <h2>Listing: {{listing.name}}</h2>
+        <div class="container">
+            <div style="width: 200px">
+                <img src="{{listing.image.url}}" alt="{{listing.name}}" height="200">
+            </div>
+            <p>{{listing.description}}</p>
+            
+            <strong>Price: </strong>$
+            {% if listing.bids.first %}
+                {{listing.bids.first.bid_price}}
+            {% else %}
+                {{listing.original_price}}
+            {% endif %}
+
+            <p>Bid: TODO</p>
+
+            <h3>Details</h3>
+            <ul>
+                <li>Listed by: {{listing.user}}</li>
+                <li>Category: {{listing.category}}</li>
+            </ul>
+            <p>Created {{listing.created}}</p>
+        </div>
+    {% else %}
+        <h3>Listing not found.</h3>
+    {% endif %}
+{% endblock %}

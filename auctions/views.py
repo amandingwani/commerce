@@ -4,6 +4,7 @@ from django.db import IntegrityError
 from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import render
 from django.urls import reverse
+from django.core.exceptions import ObjectDoesNotExist
 
 from .models import User, Listing
 from .forms import *
@@ -14,11 +15,14 @@ def index(request):
         'listings': listings
     })
 
-# def listing(request, pk):
-#     listing = Listing.objects.get(id=pk)
-#     return render(request, "auctions/index.html", context= {
-#         'listings': listings
-#     })
+def listing(request, pk):
+    try:
+        listing = Listing.objects.get(id=pk)
+    except ObjectDoesNotExist:
+        listing = None
+    return render(request, "auctions/listing.html", context= {
+        'listing': listing
+    })
 
 def categories(request):
     return render(request, "auctions/index.html")
