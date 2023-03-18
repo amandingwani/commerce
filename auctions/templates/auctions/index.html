@@ -15,11 +15,11 @@
             </div>
             <h3><a href="{% url 'listing' listing.id %}">{{listing.name}}</a></h3>
             
-            <strong>Price: </strong>$
+            <strong>Price: </strong>
             {% if listing.bids.first %}
-                {{listing.bids.first.bid_price}}
+                ${{listing.bids.first.bid_price}}
             {% else %}
-                {{listing.original_price}}
+                ${{listing.original_price}}
             {% endif %}
 
 

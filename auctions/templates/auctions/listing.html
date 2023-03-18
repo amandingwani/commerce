@@ -32,14 +32,34 @@
             </div>
             <p>{{listing.description}}</p>
             
-            <strong>Price: </strong>$
-            {% if listing.bids.first %}
-                {{listing.bids.first.bid_price}}
-            {% else %}
-                {{listing.original_price}}
-            {% endif %}
+            <h2>
+                {% if listing.bids.first %}
+                    ${{listing.bids.first.bid_price}}
+                {% else %}
+                    ${{listing.original_price}}
+                {% endif %}
+            </h2>
 
-            <p>Bid: TODO</p>
+            <p>
+                {{listing.bids.count}} bid(s) so far.
+                {% if listing.bids.count != 0%}
+                    {% if listing.bids.first.user == user %}
+                        <strong>Your</strong> bid is the current bid.
+                    {% else %}
+                        <strong>{{listing.bids.first.user}}</strong>'s bid is the current bid.
+                    {% endif %}
+                {% endif %}
+            </p>
+            
+            <p style="color: red;">{{bid_error}}</p>
+            {% if user.is_authenticated %}
+                <form action="{% url 'bid' %}" method="post">
+                    {% csrf_token %}
+                    <input type="hidden" name="listing_id" value="{{listing.id}}">
+                    <input type="number" placeholder="Bid" name="bid_value" required>
+                    <input type="submit" value="Place Bid">
+                </form>
+            {% endif %}
 
             <h3>Details</h3>
             <ul>

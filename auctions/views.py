@@ -113,6 +113,46 @@ def watchlist_delete(request):
         return HttpResponseRedirect(reverse('index'))
 
 @login_required
+def bid(request):
+    if request.method == "POST":
+        bid_value = request.POST.get('bid_value', default = None)
+        try:
+            bid_value = int(bid_value)
+        except ValueError:
+            return render(request, "auctions/index.html", context= {
+            'message': "Error, bidding amount entered was invalid.",
+            })
+
+        listing_id = request.POST.get('listing_id', default = None)
+        if listing_id:
+            try:
+                listing_obj = Listing.objects.get(id=listing_id)
+                user_obj = request.user
+            except ObjectDoesNotExist:
+                return HttpResponseRedirect(reverse('listing', args=[listing_id]))
+            
+            # bid amount check
+            if listing_obj.bids.first():
+                max_bid = listing_obj.bids.first().bid_price
+            else:
+                max_bid = listing_obj.original_price
+            
+            if bid_value <= max_bid:
+                return render(request, "auctions/index.html", context= {
+                'message': "Error, bidding amount entered was less than or equal to the current bid.",
+                })
+
+            Bid(listing=listing_obj, user=user_obj, bid_price=bid_value).save()
+
+            return HttpResponseRedirect(reverse('listing', args=[listing_id]))
+            
+        return render(request, "auctions/index.html", context= {
+        'message': "Placing bid failed",
+        })
+    else:
+        return HttpResponseRedirect(reverse('index'))
+
+@login_required
 def create_listing(request):
     if request.method == 'POST':
         # create a form instance and populate it with data from the request:
@@ -132,7 +172,7 @@ def create_listing(request):
             listing.save()
 
             # redirect to the new listing:
-            return HttpResponse('TODO')
+            return HttpResponseRedirect(reverse('listing', args=[listing.id]))
         else:
             return render(request, "auctions/create_listing.html", context= {
                 "form": form,
