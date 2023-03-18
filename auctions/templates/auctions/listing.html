@@ -23,6 +23,14 @@
                         <input type="submit" value="Add to Watchlist">
                     </form>
                 {% endif %}
+
+                {% if listing.user == user %}              
+                    <form action="{% url 'listing_delete' %}" method="post">
+                        {% csrf_token %}
+                        <input type="hidden" name="listing_id" value="{{listing.id}}">
+                        <input type="submit" value="Close Listing">
+                    </form>
+                {% endif %}
             {% endif %}
 
 

@@ -185,6 +185,33 @@ def create_listing(request):
             "form": form
         })
 
+@login_required
+def listing_delete(request):
+    if request.method == "POST":
+        listing_id = request.POST.get('listing_id', default = None)
+        if listing_id:
+            try:
+                listing_obj = Listing.objects.get(id=listing_id)
+                user_obj = request.user
+                if (listing_obj.user.id == user_obj.id):
+                    bid = listing_obj.bids.first()
+                    # delete listing
+                    listing_obj.delete()
+                    if bid:
+                        message = f"Successfully closed the listing with buyer {bid.user} and bid price {bid.bid_price}"
+                    else:
+                        message = "Successfully closed the listing."
+                    return render(request, "auctions/index.html", context= {
+                        'message': message
+                        })
+            except ObjectDoesNotExist:
+                pass
+
+        return render(request, "auctions/index.html", context= {
+        'message': "Closing listing failed",
+        })
+    else:
+        return HttpResponseRedirect(reverse('index'))
 
 def login_view(request):
     if request.method == "POST":
