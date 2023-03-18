@@ -25,7 +25,7 @@ class Listing(models.Model):
         return self.name
     
 class Comment(models.Model):
-    listing = models.ForeignKey(Listing, on_delete=models.CASCADE)
+    listing = models.ForeignKey(Listing, on_delete=models.CASCADE, related_name='comments')
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     comment = models.TextField(max_length=1000)
 
